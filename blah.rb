@@ -5,9 +5,9 @@ FPS = 30
 BLOB_COUNT = 10
 
 blobs = []
-#(BLOB_COUNT/3).times{ blobs << WonderBlob.new }
-(BLOB_COUNT/3).times{ blobs << FollowBlob.new }
-(BLOB_COUNT/3).times{ blobs << RepelBlob.new }
+(BLOB_COUNT/3).times{ blobs << WonderBlob.new }
+(BLOB_COUNT*10).times{ blobs << RepelBlob.new }
+(BLOB_COUNT*2).times{ blobs << FollowBlob.new }
 
 Shoes.app :title => 'and such' do
   animate = animate FPS do
