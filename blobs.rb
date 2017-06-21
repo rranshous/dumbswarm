@@ -1,9 +1,10 @@
 require_relative 'blob'
 
 module Tracker
+
   def distance other=nil
-    # x2 + y2 = z2 # pthag bitches
     return 0 if other.nil?
+    # x2 + y2 = z2 # pthag bitches
     Math.sqrt((self.x - other.x).abs2 + (self.y - other.y).abs2)
   end
 
