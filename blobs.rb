@@ -1,56 +1,22 @@
-class Blob
+require_relative 'blob'
 
-  SIZE_SCALER = 4
-
-  attr_accessor :x, :y, :size, :vector
-
-  def initialize
-    self.x = self.start_x
-    self.y = self.start_y
-    self.vector = self.start_vector
+module Tracker
+  def distance other=nil
+    # x2 + y2 = z2 # pthag bitches
+    return 0 if other.nil?
+    Math.sqrt((self.x - other.x).abs2 + (self.y - other.y).abs2)
   end
 
-  def start_x
-    raise NotImplimentedError
+  def head_toward other
+    return 0 if other.nil?
+    self.vector[0] = [[(-(self.x - other.x)), -2].max, 2].min
+    self.vector[1] = [[(-(self.y - other.y)), -2].max, 2].min
   end
 
-  def start_y
-    raise NotImplimentedError
-  end
-
-  def start_vector
-    raise NotImplimentedError
-  end
-
-  def size
-    raise NotImplimentedError
-  end
-
-  def fill_color
-    raise NotImplimentedError
-  end
-
-  def stroke_color
-    raise NotImplimentedError
-  end
-
-  def update_vector neighbors
-  end
-
-  def render pallete
-    pallete.fill pallete.public_send(self.fill_color)
-    pallete.stroke pallete.public_send(self.stroke_color)
-    pallete.oval(self.y, self.x, radius: self.size * SIZE_SCALER, center: true)
-  end
-
-  def tick neighbors
-    self.update_vector neighbors
-    self.update_position
-  end
-
-  def update_position
-    self.x += self.vector[0]
-    self.y += self.vector[1]
+  def head_away other
+    return 0 if other.nil?
+    self.vector[0] = [[((self.x - other.x)), -1].max, 1].min
+    self.vector[1] = [[((self.y - other.y)), -1].max, 1].min
   end
 end
 
@@ -87,6 +53,8 @@ class WonderBlob < Blob
 end
 
 class FollowBlob < Blob
+  include Tracker
+
   attr_accessor :target
 
   def start_x
@@ -102,7 +70,8 @@ class FollowBlob < Blob
   end
 
   def size
-    2
+    default = 4
+    [self.distance(self.target) / 10, default].max
   end
 
   def fill_color
@@ -117,14 +86,11 @@ class FollowBlob < Blob
     self.target ||= neighbors.sample
     self.head_toward self.target
   end
-
-  def head_toward other
-    self.vector[0] = [[(-(self.x - other.x)), -2].max, 2].min
-    self.vector[1] = [[(-(self.y - other.y)), -2].max, 2].min
-  end
 end
 
 class RepelBlob < Blob
+  include Tracker
+
   attr_accessor :target
 
   def start_x
@@ -154,10 +120,5 @@ class RepelBlob < Blob
   def update_vector neighbors
     self.target = neighbors.sample
     self.head_away self.target
-  end
-
-  def head_away other
-    self.vector[0] = [[((self.x - other.x)), -1].max, 1].min
-    self.vector[1] = [[((self.y - other.y)), -1].max, 1].min
   end
 end
