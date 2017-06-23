@@ -24,3 +24,15 @@ class Space
     end
   end
 end
+
+class Vector
+  attr_accessor :left, :front
+
+  def initialize left=0, front=0
+    self.left = left
+    self.front = front
+  end
+end
+
+class Position < Vector
+end

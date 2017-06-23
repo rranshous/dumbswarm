@@ -1,24 +1,28 @@
 class Mover
-  attr_accessor :space, :pending_moves
+  attr_accessor :space, :vectors
 
   def initialize space
     self.space = space
-    self.pending_moves = {}
+    self.vectors = {}
   end
 
   def push thing, direction
-    enqueue_push thing, direction
-  end
-
-  def tick
-    pending_moves.each do |thing, moves|
-      next_move = moves.shift
-      space.move thing, next_move
-      moves << next_move if moves.empty?
+    case direction
+    when :forward then vector(thing).front += 1
+    when :back    then vector(thing).front -= 1
+    when :left    then vector(thing).left  += 1
+    when :right   then vector(thing).left  -= 1
     end
   end
 
-  def enqueue_push thing, direction
-    (pending_moves[thing] ||= []) << direction
+  def tick
+    vectors.each do |thing, vector|
+      space.move thing, :forward, vector(thing).front
+      space.move thing, :left,    vector(thing).left
+    end
+  end
+
+  def vector thing
+    self.vectors[thing] ||= Vector.new
   end
 end

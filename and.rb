@@ -11,7 +11,7 @@ WINDOW_WIDTH=400
 WINDOW_HEIGHT=400
 SPEED = WINDOW_WIDTH / 2 / 10
 
-center = OpenStruct.new(left: WINDOW_WIDTH / 2, front: WINDOW_HEIGHT/2)
+center = Position.new(WINDOW_WIDTH / 2, WINDOW_HEIGHT/2)
 dude = Dude.new
 space = Space.new WINDOW_WIDTH, WINDOW_HEIGHT
 mover = Mover.new space
