@@ -37,6 +37,7 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'and such' do
     end
   rescue => ex
     puts "EXO: #{ex}"
+    puts "  : #{ex.backtrace}"
     raise
   end
 end

@@ -35,9 +35,21 @@ class KeyboardInterpreter
   end
 
   def tick
-    mover.push target, :forward if keyboard.pressed? "w"
-    mover.push target, :back    if keyboard.pressed? "s"
-    mover.push target, :left    if keyboard.pressed? "a"
-    mover.push target, :right   if keyboard.pressed? "d"
+    mapping.each do |direction, keys|
+      keys.each do |key|
+        mover.push target, direction if keyboard.pressed? key
+      end
+    end
+    #mover.push target, :forward if keyboard.pressed? :up
+    #mover.push target, :back    if keyboard.pressed? :down
+    #mover.push target, :left    if keyboard.pressed? :left
+    #mover.push target, :right   if keyboard.pressed? :right
+  end
+
+  def mapping
+    { forward: [:up, "w"],
+      back:    [:down, "s"],
+      left:    [:left, "a"],
+      right:   [:right, "d"] }
   end
 end
