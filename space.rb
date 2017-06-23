@@ -11,17 +11,17 @@ class Space
     things[thing] = position
   end
 
-  def position_of thing
-    things[thing]
-  end
-
   def move thing, direction, distance=1
     case direction
-    when :forward then things[thing].front -= distance
-    when :back    then things[thing].front += distance
-    when :left    then things[thing].left  -= distance
-    when :right   then things[thing].left  += distance
+    when :forward then position(thing).front -= distance
+    when :back    then position(thing).front += distance
+    when :left    then position(thing).left  -= distance
+    when :right   then position(thing).left  += distance
     end
+  end
+
+  def position thing
+    things[thing]
   end
 end
 
