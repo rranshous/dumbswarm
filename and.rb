@@ -21,23 +21,13 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'and such' do
   begin
     projector = Projector.new self, space, 10
     keyboard = Keyboard.new self
-    #keypress do |key|
-    #  case key
-    #  when "w" then mover.push dude, :forward
-    #  when "s" then mover.push dude, :back
-    #  when "a" then mover.push dude, :left
-    #  when "d" then mover.push dude, :right
-    #  end
-    #end
+    keyboard_interpreter = KeyboardInterpreter.new dude, keyboard, mover
     animate FPS do
       begin
         clear
         projector.project dude
         dude.project projector
-        mover.push dude, :forward if keyboard.pressed? "w"
-        mover.push dude, :back    if keyboard.pressed? "s"
-        mover.push dude, :left    if keyboard.pressed? "a"
-        mover.push dude, :right   if keyboard.pressed? "d"
+        keyboard_interpreter.tick
         mover.tick
       rescue => ex
         puts "EX: #{ex}"
