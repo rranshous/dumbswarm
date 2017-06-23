@@ -5,6 +5,7 @@ require_relative 'projector'
 require_relative 'dude'
 require_relative 'space'
 require_relative 'mover'
+require_relative 'keyboard'
 
 FPS = 30
 WINDOW_WIDTH=900
@@ -17,25 +18,36 @@ mover = Mover.new space
 space.add dude, center
 
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'and such' do
-  projector = Projector.new self, space, 10
-  keypress do |key|
-    case key
-    when "w" then mover.push dude, :forward
-    when "s" then mover.push dude, :back
-    when "a" then mover.push dude, :left
-    when "d" then mover.push dude, :right
+  begin
+    projector = Projector.new self, space, 10
+    keyboard = Keyboard.new self
+    #keypress do |key|
+    #  case key
+    #  when "w" then mover.push dude, :forward
+    #  when "s" then mover.push dude, :back
+    #  when "a" then mover.push dude, :left
+    #  when "d" then mover.push dude, :right
+    #  end
+    #end
+    animate FPS do
+      begin
+        clear
+        projector.project dude
+        dude.project projector
+        mover.push dude, :forward if keyboard.pressed? "w"
+        mover.push dude, :back    if keyboard.pressed? "s"
+        mover.push dude, :left    if keyboard.pressed? "a"
+        mover.push dude, :right   if keyboard.pressed? "d"
+        mover.tick
+      rescue => ex
+        puts "EX: #{ex}"
+        puts "  : #{ex.backtrace}"
+        raise
+      end
     end
-  end
-  animate FPS do
-    begin
-      clear
-      projector.project dude
-      dude.project projector
-      mover.tick
-    rescue => ex
-      puts "EX: #{ex}"
-      puts "  : #{ex.backtrace}"
-    end
+  rescue => ex
+    puts "EXO: #{ex}"
+    raise
   end
 end
 
