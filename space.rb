@@ -2,7 +2,7 @@ class Space
   attr_accessor :width, :height, :things
 
   def initialize width, height
-    self.width = width
+    self.width  = width
     self.height = height
     self.things = {}
   end

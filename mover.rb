@@ -6,12 +6,12 @@ class Mover
     self.vectors = {}
   end
 
-  def push thing, direction
+  def push thing, direction, force=0.1
     case direction
-    when :forward then vector(thing).front += 1
-    when :back    then vector(thing).front -= 1
-    when :left    then vector(thing).left  += 1
-    when :right   then vector(thing).left  -= 1
+    when :forward then vector(thing).front += force
+    when :back    then vector(thing).front -= force
+    when :left    then vector(thing).left  += force
+    when :right   then vector(thing).left  -= force
     end
   end
 

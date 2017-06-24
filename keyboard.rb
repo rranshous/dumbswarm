@@ -26,24 +26,22 @@ class Keyboard
 end
 
 class KeyboardInterpreter
-  attr_accessor :target, :keyboard, :mover
+  attr_accessor :keyboard
 
-  def initialize target, keyboard, mover
+  def initialize keyboard
     self.keyboard = keyboard
-    self.mover = mover
-    self.target = target
   end
 
-  def tick
+  def directions
+    moves = []
     mapping.each do |direction, keys|
       keys.each do |key|
-        mover.push target, direction if keyboard.pressed? key
+        if keyboard.pressed? key
+          moves << direction and break
+        end
       end
     end
-    #mover.push target, :forward if keyboard.pressed? :up
-    #mover.push target, :back    if keyboard.pressed? :down
-    #mover.push target, :left    if keyboard.pressed? :left
-    #mover.push target, :right   if keyboard.pressed? :right
+    moves
   end
 
   def mapping
