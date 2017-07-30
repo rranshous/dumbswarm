@@ -13,7 +13,6 @@ class Canvas
   end
 
   def paint locatable
-    print 'p'
     shoe.fill shoe.red
     shoe.oval left: locatable.x(shoe),
               top: locatable.y(shoe),
@@ -36,6 +35,14 @@ class Cellspace
 
   def at locatable
     cells[position(locatable)]
+  end
+
+  def swap cell1, cell2
+    left, up               = cell2.left, cell2.up
+    cell2.left, cell2.up   = cell1.left, cell1.up
+    cell1.left, cell1.up   = left, up
+    cells[position(cell1)] = cell1
+    cells[position(cell2)] = cell2
   end
 
   def position locatable
@@ -165,20 +172,17 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   keyboard_interpreter = KeyboardInterpreter.new keyboard
   animate FPS do
     begin
-      puts "start"
       clear
       screen.pixels.each do |pixel|
-        cell = cellspace.at(pixel)
+        cell = cellspace.at pixel
         cell.fill painter
       end
       keyboard_interpreter.directions.each do |direction|
         case direction
         when :forward
-          active_cell.content = nil
-          active_cell = cellspace.at(Position.new(left: active_cell.left,
-                                                  up: active_cell.up+1))
-          active_cell.content = true
-          puts "set content on: #{active_cell}"
+          next_cell = cellspace.at Position.new(left: active_cell.left,
+                                                  up: active_cell.up+1)
+          cellspace.swap next_cell, active_cell
         end
       end
     rescue => ex
