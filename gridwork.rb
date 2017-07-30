@@ -9,7 +9,6 @@ class Canvas
 
   def initialize shoe
     self.shoe = shoe
-    puts 'new canvas'
   end
 
   def paint locatable
@@ -26,7 +25,6 @@ class Cellspace
 
   def initialize
     self.cells = {}
-    puts 'new cellspace'
   end
 
   def populate space
@@ -63,6 +61,14 @@ module Locatable
   end
 end
 
+class Position
+  include Locatable
+  def initialize opts
+    self.left  = opts[:left]  if !opts[:left].nil?
+    self.up    = opts[:up]    if !opts[:up].nil?
+  end
+end
+
 module Paintable
   def visible?
     false
@@ -94,7 +100,6 @@ class Cell
   def initialize opts
     self.left  = opts[:left]  if !opts[:left].nil?
     self.up    = opts[:up]    if !opts[:up].nil?
-    puts 'new cell'
   end
 
   def visible?
@@ -107,7 +112,6 @@ class Pixel
   def initialize opts
     self.left  = opts[:left]  if !opts[:left].nil?
     self.up    = opts[:up]    if !opts[:up].nil?
-    puts 'new pixel'
   end
 end
 
@@ -128,7 +132,6 @@ class Screen
     self.height = opts[:height] if opts[:height]
     self.width  = opts[:width]  if opts[:width]
     self.pixels = self.class.create_pixels self.height, self.width
-    puts 'new screen'
   end
 
   def self.create_pixels width, height
@@ -149,6 +152,9 @@ screen = Screen.new height: WINDOW_HEIGHT, width: WINDOW_WIDTH
 puts "pixels: #{screen.pixels.to_a.length}"
 cellspace = Cellspace.new
 cellspace.populate screen.pixels
+starter = Position.new(left: 10, up: 10)
+cellspace.at(starter).content = true
+puts "set content on: #{starter}"
 puts "cells: #{cellspace.cells.length}"
 painter = Painter.new
 
