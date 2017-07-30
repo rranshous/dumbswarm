@@ -25,18 +25,22 @@ class Cellspace
   attr_accessor :cells
 
   def initialize
-    self.cells = []
+    self.cells = {}
     puts 'new cellspace'
   end
 
   def populate space
     space.each do |locatable|
-      cells << Cell.new(left: locatable.left, up: locatable.up)
+      cells[position(locatable)] = Cell.new(left: locatable.left, up: locatable.up)
     end
   end
 
   def at locatable
-    cells.find {|c| c.overlap? locatable }
+    cells[position(locatable)]
+  end
+
+  def position locatable
+    [locatable.left, locatable.up]
   end
 end
 
