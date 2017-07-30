@@ -61,7 +61,7 @@ module Locatable
   end
 
   def x(space)
-    (space.width / 2) + left
+    (space.width / 2) - left
   end
 
   def y(space)
@@ -147,7 +147,7 @@ class Screen
     half_width  = width / 2
     half_height = height / 2
     (-half_width..half_width).each do |w|
-      (-half_height..half_height).to_a.reverse.each do |h|
+      (-half_height..half_height).each do |h|
         pixels << Pixel.new(left: w, up: h)
       end
     end
@@ -182,6 +182,18 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
         when :forward
           next_cell = cellspace.at Position.new(left: active_cell.left,
                                                   up: active_cell.up+1)
+          cellspace.swap next_cell, active_cell
+        when :back
+          next_cell = cellspace.at Position.new(left: active_cell.left,
+                                                  up: active_cell.up-1)
+          cellspace.swap next_cell, active_cell
+        when :left
+          next_cell = cellspace.at Position.new(left: active_cell.left+1,
+                                                  up: active_cell.up)
+          cellspace.swap next_cell, active_cell
+        when :right
+          next_cell = cellspace.at Position.new(left: active_cell.left-1,
+                                                  up: active_cell.up)
           cellspace.swap next_cell, active_cell
         end
       end
