@@ -1,6 +1,7 @@
 require 'shoes'
+require_relative 'keyboard'
 
-FPS = 1
+FPS = 10
 WINDOW_WIDTH=100
 WINDOW_HEIGHT=100
 
@@ -152,14 +153,16 @@ screen = Screen.new height: WINDOW_HEIGHT, width: WINDOW_WIDTH
 puts "pixels: #{screen.pixels.to_a.length}"
 cellspace = Cellspace.new
 cellspace.populate screen.pixels
-starter = Position.new(left: 10, up: 10)
-cellspace.at(starter).content = true
-puts "set content on: #{starter}"
+active_cell = cellspace.at(Position.new(left: 10, up: 10))
+active_cell.content = true
+puts "set content on: #{active_cell}"
 puts "cells: #{cellspace.cells.length}"
 painter = Painter.new
 
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   painter.canvas = Canvas.new self
+  keyboard = Keyboard.new self
+  keyboard_interpreter = KeyboardInterpreter.new keyboard
   animate FPS do
     begin
       puts "start"
@@ -167,6 +170,16 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
       screen.pixels.each do |pixel|
         cell = cellspace.at(pixel)
         cell.fill painter
+      end
+      keyboard_interpreter.directions.each do |direction|
+        case direction
+        when :forward
+          active_cell.content = nil
+          active_cell = cellspace.at(Position.new(left: active_cell.left,
+                                                  up: active_cell.up+1))
+          active_cell.content = true
+          puts "set content on: #{active_cell}"
+        end
       end
     rescue => ex
       puts "EXO: #{ex}"
