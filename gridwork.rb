@@ -204,7 +204,6 @@ end
 class Entity
   # include SpaceTaker
   attr_accessor :cells
-  include Locatable
   include Paintable
 
   def visible?
