@@ -304,37 +304,6 @@ class Mover
     true
   end
 
-  def transpose locatable, center
-    diff = (locatable.left - center.left).abs
-    left_of = locatable.left < center.left
-    if left_of
-      left_offset = locatable.left + diff * 2
-    else
-      left_offset = locatable.left - diff * 2
-    end
-    diff = (locatable.up - center.up).abs
-    above = locatable.up > center.up
-    if above
-      up_offset = locatable.up - diff * 2
-    else
-      up_offset = locatable.up + diff * 2
-    end
-    Position.new(left: left_offset,
-                 up:   up_offset)
-  end
-
-  def reverse locatable, center
-    diff = (locatable.left - center.left).abs
-    left_of = locatable.left < center.left
-    if left_of
-      left_offset = locatable.left + diff * 2
-    else
-      left_offset = locatable.left - diff * 2
-    end
-    Position.new(left: left_offset,
-                 up:   locatable.up)
-  end
-
   def active? *space_takers
     space_takers.all? {|s| s.visible? }
   end
