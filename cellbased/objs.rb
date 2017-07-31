@@ -205,16 +205,9 @@ class Cellspace
     self.cells = {}
   end
 
-  def populate space
-    #space.each do |locatable|
-    #  cells[position(locatable)] = Cell.new(left: locatable.left,
-    #                                        up: locatable.up)
-    #end
-  end
-
   def at locatable
-    cells[position(locatable)] ||= Cell.new(left: locatable.left,
-                                            up: locatable.up)
+    pos = position locatable
+    cells[position(locatable)] ||= Cell.new(left: pos[0], up: pos[1])
   end
 
   def for shape, center
@@ -242,7 +235,7 @@ class Cellspace
   private
 
   def position locatable
-    [locatable.left, locatable.up]
+    [locatable.left.round(2), locatable.up.round(2)]
   end
 end
 
@@ -316,6 +309,7 @@ class Mover
       next_pos = Locatable.add cell, Position.new(left: left, up: up)
       next_cell = cellspace.at next_pos
       if active?(cell, next_cell)
+        puts "active"
         unwind swap_history
         return false
       end
