@@ -45,9 +45,11 @@ class KeyboardInterpreter
   end
 
   def mapping
-    { forward: [:up, "w"],
-      back:    [:down, "s"],
-      left:    [:left, "a"],
-      right:   [:right, "d"] }
+    { forward:         [:up, "w"],
+      back:            [:down, "s"],
+      left:            [:left, "a"],
+      right:           [:right, "d"],
+      rotate_right:    ["e"],
+      rotate_left:     ["q"] }
   end
 end

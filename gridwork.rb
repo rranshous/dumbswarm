@@ -51,6 +51,16 @@ class Cellspace
     cells[position(cell2)] = cell2
   end
 
+  def center cells
+    left = cells.sort_by { |c| c.left }.first
+    right = cells.sort_by { |c| -c.left }.first
+    top = cells.sort_by { |c| c.up }.first
+    bottom = cells.sort_by { |c| -c.up }.first
+    left_avg = ((left.left + right.left).to_f / 2).to_i
+    up_avg = ((top.up + bottom.up).to_f / 2).to_i
+    Position.new(left: left_avg, up: up_avg)
+  end
+
   private
 
   def position locatable
@@ -131,6 +141,14 @@ class Cell
   def visible?
     !content.empty?
   end
+
+  def to_s
+    "<Cell #{left}:#{up}-#{visible?}>"
+  end
+
+  def inspect
+    to_s
+  end
 end
 
 class Pixel
@@ -201,6 +219,15 @@ class Box < Shape
   end
 end
 
+class Line < Shape
+  def populate_fills opts
+    half_length = opts[:length] / 2
+    (-half_length..half_length).each do |i|
+      self.fills << Position.new(left: i, up: 0)
+    end
+  end
+end
+
 class Entity
   # include SpaceTaker
   attr_accessor :cells
@@ -224,6 +251,7 @@ end
 
 class Mover
   attr_accessor :cellspace
+
   def move space_taker, direction
     case direction
     when :forward
@@ -234,10 +262,36 @@ class Mover
       _move left_sort(space_taker.cells), 1, 0
     when :right
       _move right_sort(space_taker.cells), -1, 0
+    when :rotate_right
+      rotate space_taker, -15
+    when :rotate_left
+      rotate space_taker, 15
     end
   end
 
   private
+
+  def rotate space_taker, degrees
+    angle = degrees * Math::PI / 180
+    handled = []
+    center = cellspace.center(space_taker.cells)
+    puts "center: #{center}"
+    space_taker.cells.each do |cell|
+      next if handled.include? cell
+      puts "cell initial: #{cell}"
+      x1 = -cell.left - -center.left
+      y1 = cell.up - center.up
+      x2 = x1 * Math.cos(angle) - y1 * Math.sin(angle)
+      y2 = x1 * Math.sin(angle) + y1 * Math.cos(angle)
+      to_swap_pos = Position.new(left: -x2, up: y2)
+      puts "to swap pos: #{to_swap_pos}"
+      to_swap_pos = Locatable.add center, to_swap_pos
+      puts "to swap pos2: #{to_swap_pos}"
+      to_swap = cellspace.at to_swap_pos
+      cellspace.swap cell, to_swap
+      handled += [to_swap, cell]
+    end
+  end
 
   def _move cells, left, up
     swap_history = []
@@ -254,6 +308,36 @@ class Mover
     true
   end
 
+  def transpose locatable, center
+    diff = (locatable.left - center.left).abs
+    left_of = locatable.left < center.left
+    if left_of
+      left_offset = locatable.left + diff * 2
+    else
+      left_offset = locatable.left - diff * 2
+    end
+    diff = (locatable.up - center.up).abs
+    above = locatable.up > center.up
+    if above
+      up_offset = locatable.up - diff * 2
+    else
+      up_offset = locatable.up + diff * 2
+    end
+    Position.new(left: left_offset,
+                 up:   up_offset)
+  end
+
+  def reverse locatable, center
+    diff = (locatable.left - center.left).abs
+    left_of = locatable.left < center.left
+    if left_of
+      left_offset = locatable.left + diff * 2
+    else
+      left_offset = locatable.left - diff * 2
+    end
+    Position.new(left: left_offset,
+                 up:   locatable.up)
+  end
 
   def active? *space_takers
     space_takers.all? {|s| s.visible? }
@@ -289,11 +373,10 @@ cellspace = Cellspace.new
 cellspace.populate screen.pixels
 painter = Painter.new
 
+line = Line.new length: 10
 box = Box.new width: 10
-
 entity = Entity.new
-entity.cells = cellspace.for box, Position.new(left: 0, up: 0)
-
+entity.cells = cellspace.for line, Position.new(left: 0, up: 0)
 wall = Entity.new
 wall.cells = cellspace.for box, Position.new(left: -100, up: 100)
 
