@@ -5,6 +5,7 @@ FPS = 60
 WINDOW_WIDTH=1000
 WINDOW_HEIGHT=1000
 
+
 screen = Screen.new height: WINDOW_HEIGHT, width: WINDOW_WIDTH
 puts "pixels: #{screen.pixels.to_a.length}"
 cellspace = Cellspace.new
