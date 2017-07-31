@@ -216,11 +216,41 @@ class Mover
         next_cell = cellspace.at next_pos
         cellspace.swap next_cell, cell
       end
+    when :back
+      back_sort(space_taker.cells).each do |cell|
+        next_pos = Locatable.add cell, Position.new(left: 0, up: -1)
+        next_cell = cellspace.at next_pos
+        cellspace.swap next_cell, cell
+      end
+    when :left
+      left_sort(space_taker.cells).each do |cell|
+        next_pos = Locatable.add cell, Position.new(left: 1, up: 0)
+        next_cell = cellspace.at next_pos
+        cellspace.swap next_cell, cell
+      end
+    when :right
+      right_sort(space_taker.cells).each do |cell|
+        next_pos = Locatable.add cell, Position.new(left: -1, up: 0)
+        next_cell = cellspace.at next_pos
+        cellspace.swap next_cell, cell
+      end
     end
   end
 
   def forward_sort cells
     cells.sort_by(&:left).sort_by(&:up).reverse
+  end
+
+  def back_sort cells
+    cells.sort_by(&:left).sort_by(&:up)
+  end
+
+  def left_sort cells
+    cells.sort_by(&:up).sort_by(&:left).reverse
+  end
+
+  def right_sort cells
+    cells.sort_by(&:up).sort_by(&:left)
   end
 end
 
@@ -235,7 +265,8 @@ puts "set content on: #{active_cell}"
 puts "cells: #{cellspace.cells.length}"
 painter = Painter.new
 
-line = Shape.new(fills: [Position.new(left: 0,  up: 0),
+line = Shape.new(fills: [Position.new(left: 0,  up: 1),
+                         Position.new(left: 0,  up: -1),
                          Position.new(left: 1,  up: 0),
                          Position.new(left: -1, up: 0)])
 entity = Entity.new
