@@ -239,13 +239,17 @@ class Mover
   private
 
   def _move cells, left, up
+    swap_history = []
     cells.each do |cell|
       next_pos = Locatable.add cell, Position.new(left: left, up: up)
       next_cell = cellspace.at next_pos
       if active?(cell) && active?(next_cell)
-        puts "cant swap: #{cell.left}:#{cell.up} :: #{next_cell.left}::#{next_cell.up}"
+        swap_history.reverse.each do |(c1, c2)|
+          cellspace.swap(c2, c1)
+        end
         return false
       end
+      swap_history << [cell, next_cell]
       cellspace.swap(cell, next_cell)
     end
     true
