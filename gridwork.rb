@@ -1,9 +1,9 @@
 require 'shoes'
 require_relative 'keyboard'
 
-FPS = 10
-WINDOW_WIDTH=100
-WINDOW_HEIGHT=100
+FPS = 60
+WINDOW_WIDTH=1000
+WINDOW_HEIGHT=1000
 
 class Canvas
   attr_accessor :shoe
@@ -13,7 +13,6 @@ class Canvas
   end
 
   def fill locatable
-    print 'f'
     shoe.fill shoe.red
     shoe.oval left: locatable.x(shoe),
               top: locatable.y(shoe),
@@ -43,6 +42,7 @@ class Cellspace
   end
 
   def swap cell1, cell2
+    return false if cell1.visible? && cell2.visible?
     left, up               = cell2.left, cell2.up
     cell2.left, cell2.up   = cell1.left, cell1.up
     cell1.left, cell1.up   = left, up
@@ -176,11 +176,27 @@ class Shape
   attr_accessor :fills
 
   def initialize opts
-    self.fills = opts[:fills] if opts[:fills]
+    self.fills = opts[:fills] || []
+    populate_fills opts
   end
 
   def cells cellspace, center
-    fills.map {|fill| cellspace.at Locatable.add(center, fill) }
+    fills.map {|fill| cellspace.at Locatable.add(center, fill) }.uniq
+  end
+
+  def populate_fills opts
+  end
+end
+
+class Box < Shape
+  def populate_fills opts
+    half_width = opts[:width] / 2
+    (-half_width..half_width).each do |i|
+      self.fills << Position.new(left: i, up: half_width)
+      self.fills << Position.new(left: i, up: -half_width)
+      self.fills << Position.new(left: half_width, up: i)
+      self.fills << Position.new(left: -half_width, up: i)
+    end
   end
 end
 
@@ -214,7 +230,7 @@ class Mover
       forward_sort(space_taker.cells).each do |cell|
         next_pos = Locatable.add cell, Position.new(left: 0, up: 1)
         next_cell = cellspace.at next_pos
-        cellspace.swap next_cell, cell
+        cellspace.swap(next_cell, cell) or raise 'could not swap'
       end
     when :back
       back_sort(space_taker.cells).each do |cell|
@@ -265,12 +281,10 @@ puts "set content on: #{active_cell}"
 puts "cells: #{cellspace.cells.length}"
 painter = Painter.new
 
-line = Shape.new(fills: [Position.new(left: 0,  up: 1),
-                         Position.new(left: 0,  up: -1),
-                         Position.new(left: 1,  up: 0),
-                         Position.new(left: -1, up: 0)])
+box = Box.new width: 10
+
 entity = Entity.new
-entity.cells = cellspace.for line, Position.new(left: 0, up: 0)
+entity.cells = cellspace.for box, Position.new(left: 0, up: 0)
 
 mover = Mover.new
 mover.cellspace = cellspace
@@ -281,11 +295,8 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   keyboard_interpreter = KeyboardInterpreter.new keyboard
   animate FPS do
     begin
-      puts "start"
       clear
-
       entity.paint painter
-
       keyboard_interpreter.directions.each do |direction|
         mover.move entity, direction
       end
@@ -296,11 +307,3 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
     end
   end
 end
-
-      #screen.pixels.each do |pixel|
-      #  cell = cellspace.at pixel
-      #  cell.fill painter
-      #end
-      #next_cell = cellspace.at Position.new(left: active_cell.left,
-      #                                        up: active_cell.up+1)
-      #cellspace.swap next_cell, active_cell
