@@ -28,13 +28,15 @@ class Cellspace
   end
 
   def populate space
-    space.each do |locatable|
-      cells[position(locatable)] = Cell.new(left: locatable.left, up: locatable.up)
-    end
+    #space.each do |locatable|
+    #  cells[position(locatable)] = Cell.new(left: locatable.left,
+    #                                        up: locatable.up)
+    #end
   end
 
   def at locatable
-    cells[position(locatable)]
+    cells[position(locatable)] ||= Cell.new(left: locatable.left,
+                                            up: locatable.up)
   end
 
   def for shape, center
@@ -243,10 +245,8 @@ class Mover
     cells.each do |cell|
       next_pos = Locatable.add cell, Position.new(left: left, up: up)
       next_cell = cellspace.at next_pos
-      if active?(cell) && active?(next_cell)
-        swap_history.reverse.each do |(c1, c2)|
-          cellspace.swap(c2, c1)
-        end
+      if active?(cell, next_cell)
+        unwind swap_history
         return false
       end
       swap_history << [cell, next_cell]
@@ -255,8 +255,15 @@ class Mover
     true
   end
 
-  def active? cell
-    cell.visible?
+
+  def active? *space_takers
+    space_takers.all? {|s| s.visible? }
+  end
+
+  def unwind swap_history
+    swap_history.reverse.each do |(c1, c2)|
+      cellspace.swap(c2, c1)
+    end
   end
 
   def forward_sort cells
@@ -281,10 +288,6 @@ screen = Screen.new height: WINDOW_HEIGHT, width: WINDOW_WIDTH
 puts "pixels: #{screen.pixels.to_a.length}"
 cellspace = Cellspace.new
 cellspace.populate screen.pixels
-active_cell = cellspace.at(Position.new(left: 10, up: 10))
-active_cell.content = true
-puts "set content on: #{active_cell}"
-puts "cells: #{cellspace.cells.length}"
 painter = Painter.new
 
 box = Box.new width: 10
@@ -308,8 +311,7 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
       entity.paint painter
       wall.paint painter
       keyboard_interpreter.directions.each do |direction|
-        move_success = mover.move entity, direction
-        puts 'failed move' if !move_success
+        mover.move entity, direction
       end
     rescue => ex
       puts "EXO: #{ex}"
