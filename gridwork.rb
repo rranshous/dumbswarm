@@ -275,18 +275,14 @@ class Mover
     angle = degrees * Math::PI / 180
     handled = []
     center = cellspace.center(space_taker.cells)
-    puts "center: #{center}"
     space_taker.cells.each do |cell|
       next if handled.include? cell
-      puts "cell initial: #{cell}"
       x1 = -cell.left - -center.left
       y1 = cell.up - center.up
       x2 = x1 * Math.cos(angle) - y1 * Math.sin(angle)
       y2 = x1 * Math.sin(angle) + y1 * Math.cos(angle)
       to_swap_pos = Position.new(left: -x2, up: y2)
-      puts "to swap pos: #{to_swap_pos}"
       to_swap_pos = Locatable.add center, to_swap_pos
-      puts "to swap pos2: #{to_swap_pos}"
       to_swap = cellspace.at to_swap_pos
       cellspace.swap cell, to_swap
       handled += [to_swap, cell]
@@ -373,8 +369,8 @@ cellspace = Cellspace.new
 cellspace.populate screen.pixels
 painter = Painter.new
 
-line = Line.new length: 10
-box = Box.new width: 10
+line = Line.new length: 40
+box = Box.new width: 20
 entity = Entity.new
 entity.cells = cellspace.for line, Position.new(left: 0, up: 0)
 wall = Entity.new
