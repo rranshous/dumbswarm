@@ -12,7 +12,8 @@ class Canvas
     self.shoe = shoe
   end
 
-  def paint locatable
+  def fill locatable
+    print 'f'
     shoe.fill shoe.red
     shoe.oval left: locatable.x(shoe),
               top: locatable.y(shoe),
@@ -37,6 +38,10 @@ class Cellspace
     cells[position(locatable)]
   end
 
+  def for shape, center
+    shape.cells(self, center)
+  end
+
   def swap cell1, cell2
     left, up               = cell2.left, cell2.up
     cell2.left, cell2.up   = cell1.left, cell1.up
@@ -44,6 +49,8 @@ class Cellspace
     cells[position(cell1)] = cell1
     cells[position(cell2)] = cell2
   end
+
+  private
 
   def position locatable
     [locatable.left, locatable.up]
@@ -56,16 +63,26 @@ module Locatable
   def up= mag; @up = mag; end
   def up; @up; end
 
+  def position= locatable
+    self.left = locatable.left
+    self.up   = locatable.up
+  end
+
   def overlap? locatable
     left == locatable.left && up == locatable.up
   end
 
-  def x(space)
+  def x space
     (space.width / 2) - left
   end
 
-  def y(space)
+  def y space
     (space.height / 2) - up
+  end
+
+  def self.add l1, l2
+    Position.new(left: l1.left + l2.left,
+                 up:   l1.up   + l2.up)
   end
 end
 
@@ -82,7 +99,7 @@ module Paintable
     false
   end
 
-  def fill painter
+  def paint painter
     painter.fill self
   end
 end
@@ -128,7 +145,7 @@ class Painter
 
   def fill paintable
     if paintable.visible?
-      canvas.paint paintable
+      canvas.fill paintable
     end
   end
 end
@@ -155,6 +172,58 @@ class Screen
   end
 end
 
+class Shape
+  attr_accessor :fills
+
+  def initialize opts
+    self.fills = opts[:fills] if opts[:fills]
+  end
+
+  def cells cellspace, center
+    fills.map {|fill| cellspace.at Locatable.add(center, fill) }
+  end
+end
+
+class Entity
+  # include SpaceTaker
+  attr_accessor :cells
+  include Locatable
+  include Paintable
+
+  def visible?
+    true
+  end
+
+  def cells= cells
+    @cells = cells
+    cells.each {|c| c.content = self }
+  end
+
+  def paint painter
+    cells.each do |cell|
+      cell.paint painter
+    end
+  end
+end
+
+class Mover
+  attr_accessor :cellspace
+  def move space_taker, direction
+    case direction
+    when :forward
+      forward_sort(space_taker.cells).each do |cell|
+        next_pos = Locatable.add cell, Position.new(left: 0, up: 1)
+        next_cell = cellspace.at next_pos
+        cellspace.swap next_cell, cell
+      end
+    end
+  end
+
+  def forward_sort cells
+    cells.sort_by(&:left).sort_by(&:up).reverse
+  end
+end
+
 
 screen = Screen.new height: WINDOW_HEIGHT, width: WINDOW_WIDTH
 puts "pixels: #{screen.pixels.to_a.length}"
@@ -166,36 +235,28 @@ puts "set content on: #{active_cell}"
 puts "cells: #{cellspace.cells.length}"
 painter = Painter.new
 
+line = Shape.new(fills: [Position.new(left: 0,  up: 0),
+                         Position.new(left: 1,  up: 0),
+                         Position.new(left: -1, up: 0)])
+entity = Entity.new
+entity.cells = cellspace.for line, Position.new(left: 0, up: 0)
+
+mover = Mover.new
+mover.cellspace = cellspace
+
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   painter.canvas = Canvas.new self
   keyboard = Keyboard.new self
   keyboard_interpreter = KeyboardInterpreter.new keyboard
   animate FPS do
     begin
+      puts "start"
       clear
-      screen.pixels.each do |pixel|
-        cell = cellspace.at pixel
-        cell.fill painter
-      end
+
+      entity.paint painter
+
       keyboard_interpreter.directions.each do |direction|
-        case direction
-        when :forward
-          next_cell = cellspace.at Position.new(left: active_cell.left,
-                                                  up: active_cell.up+1)
-          cellspace.swap next_cell, active_cell
-        when :back
-          next_cell = cellspace.at Position.new(left: active_cell.left,
-                                                  up: active_cell.up-1)
-          cellspace.swap next_cell, active_cell
-        when :left
-          next_cell = cellspace.at Position.new(left: active_cell.left+1,
-                                                  up: active_cell.up)
-          cellspace.swap next_cell, active_cell
-        when :right
-          next_cell = cellspace.at Position.new(left: active_cell.left-1,
-                                                  up: active_cell.up)
-          cellspace.swap next_cell, active_cell
-        end
+        mover.move entity, direction
       end
     rescue => ex
       puts "EXO: #{ex}"
@@ -204,3 +265,11 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
     end
   end
 end
+
+      #screen.pixels.each do |pixel|
+      #  cell = cellspace.at pixel
+      #  cell.fill painter
+      #end
+      #next_cell = cellspace.at Position.new(left: active_cell.left,
+      #                                        up: active_cell.up+1)
+      #cellspace.swap next_cell, active_cell
