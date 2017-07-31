@@ -42,7 +42,6 @@ class Cellspace
   end
 
   def swap cell1, cell2
-    return false if cell1.visible? && cell2.visible?
     left, up               = cell2.left, cell2.up
     cell2.left, cell2.up   = cell1.left, cell1.up
     cell1.left, cell1.up   = left, up
@@ -227,30 +226,33 @@ class Mover
   def move space_taker, direction
     case direction
     when :forward
-      forward_sort(space_taker.cells).each do |cell|
-        next_pos = Locatable.add cell, Position.new(left: 0, up: 1)
-        next_cell = cellspace.at next_pos
-        cellspace.swap(next_cell, cell) or raise 'could not swap'
-      end
+      _move forward_sort(space_taker.cells), 0, 1
     when :back
-      back_sort(space_taker.cells).each do |cell|
-        next_pos = Locatable.add cell, Position.new(left: 0, up: -1)
-        next_cell = cellspace.at next_pos
-        cellspace.swap next_cell, cell
-      end
+      _move back_sort(space_taker.cells), 0, -1
     when :left
-      left_sort(space_taker.cells).each do |cell|
-        next_pos = Locatable.add cell, Position.new(left: 1, up: 0)
-        next_cell = cellspace.at next_pos
-        cellspace.swap next_cell, cell
-      end
+      _move left_sort(space_taker.cells), 1, 0
     when :right
-      right_sort(space_taker.cells).each do |cell|
-        next_pos = Locatable.add cell, Position.new(left: -1, up: 0)
-        next_cell = cellspace.at next_pos
-        cellspace.swap next_cell, cell
-      end
+      _move right_sort(space_taker.cells), -1, 0
     end
+  end
+
+  private
+
+  def _move cells, left, up
+    cells.each do |cell|
+      next_pos = Locatable.add cell, Position.new(left: left, up: up)
+      next_cell = cellspace.at next_pos
+      if active?(cell) && active?(next_cell)
+        puts "cant swap: #{cell.left}:#{cell.up} :: #{next_cell.left}::#{next_cell.up}"
+        return false
+      end
+      cellspace.swap(cell, next_cell)
+    end
+    true
+  end
+
+  def active? cell
+    cell.visible?
   end
 
   def forward_sort cells
@@ -286,6 +288,9 @@ box = Box.new width: 10
 entity = Entity.new
 entity.cells = cellspace.for box, Position.new(left: 0, up: 0)
 
+wall = Entity.new
+wall.cells = cellspace.for box, Position.new(left: -100, up: 100)
+
 mover = Mover.new
 mover.cellspace = cellspace
 
@@ -297,8 +302,10 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
     begin
       clear
       entity.paint painter
+      wall.paint painter
       keyboard_interpreter.directions.each do |direction|
-        mover.move entity, direction
+        move_success = mover.move entity, direction
+        puts 'failed move' if !move_success
       end
     rescue => ex
       puts "EXO: #{ex}"
