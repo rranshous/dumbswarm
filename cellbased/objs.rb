@@ -69,10 +69,15 @@ class Canvas
   end
 
   def fill locatable
-    shoe.fill shoe.red
+    shoe.nostroke
+    shoe.fill shoe.black
     shoe.oval left: locatable.x(shoe),
               top: locatable.y(shoe),
               radius: 1
+  end
+
+  def clear
+    shoe.clear
   end
 end
 
@@ -91,6 +96,10 @@ class Painter
     if paintable.visible?
       canvas.fill paintable
     end
+  end
+
+  def clear
+    canvas.clear
   end
 end
 
@@ -170,16 +179,20 @@ end
 
 # Cells
 
-
 class Cell
   include Locatable
   include Paintable
+  # include SpaceTaker
 
   attr_accessor :content
 
   def initialize opts
     self.left  = opts[:left]  if !opts[:left].nil?
     self.up    = opts[:up]    if !opts[:up].nil?
+  end
+
+  def cells
+    [self]
   end
 
   def visible?
@@ -264,6 +277,45 @@ class Entity
     cells.each do |cell|
       cell.paint painter
     end
+  end
+end
+
+require 'forwardable'
+class Particle
+  # include SpaceTaker
+  include Paintable
+  extend Forwardable
+  attr_accessor :cell, :brain, :energy, :charge
+
+  def initialize opts
+    self.cell   = opts[:cell]
+    self.brain  = opts[:brain]
+    self.energy = opts[:energy]
+    self.charge = opts[:charge]
+  end
+
+  def_delegator :cell, :paint
+
+  def act enacter
+    brain.act self, enacter
+  end
+
+  def move direction, enacter
+    enacter.move self, direction
+  end
+
+  def cells
+    [cell]
+  end
+
+  def cell= cell
+    cell.content = self
+    @cell = cell
+  end
+end
+
+class Brain
+  def act body, enacter
   end
 end
 

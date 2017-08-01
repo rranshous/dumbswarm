@@ -39,3 +39,8 @@ module Paintable
   end
 end
 
+module Wanderer
+  def act body, enacter
+    body.move :forward, enacter
+  end
+end
