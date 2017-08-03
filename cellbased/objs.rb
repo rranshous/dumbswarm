@@ -196,7 +196,7 @@ class Cell
   end
 
   def collide other
-    content.collide(self, other) if content.respond_to?(:collide)
+    content.collide(other.content) if content.respond_to?(:collide)
   end
 
   def visible?
@@ -280,31 +280,62 @@ end
 
 require 'forwardable'
 class Particle
+  extend  Forwardable
+
   include SpaceTaker
   include Paintable
-  extend Forwardable
-  attr_accessor :cell, :brain, :energy, :charge
+  attr_accessor :cell, :brain, :energy
 
   def initialize opts
     self.cell   = opts[:cell]
     self.brain  = opts[:brain]
     self.energy = opts[:energy]
-    self.charge = opts[:charge]
   end
-
-  def_delegator :cell, :paint
 
   def act enacter
     brain.act self, enacter
   end
 
   def move direction, enacter
-    enacter.move self, direction
+    enacter.move(self, direction) if alive?
   end
 
-  def collide cell1, cell2
-    if cell1.content == self
-    end
+  def collide other_thing
+    hit other_thing
+  end
+
+  def hit other_thing
+    other_thing.take_damage self
+  end
+
+  def take_damage other_thing
+    energy.subtract other_thing.hit_damage
+    die if out_of_energy?
+  end
+
+  def paint painter
+    cell.paint(painter) if alive?
+  end
+
+  def hit_damage
+    1
+  end
+
+  def out_of_energy?
+    energy.empty?
+  end
+
+  def die
+    self.cell.content = nil
+    self.cell = nil
+  end
+
+  def dead?
+    self.cell.nil?
+  end
+
+  def alive?
+    !dead?
   end
 
   def cells
@@ -312,13 +343,36 @@ class Particle
   end
 
   def cell= cell
-    cell.content = self
+    cell.content = self if !cell.nil?
     @cell = cell
   end
 end
 
 class Brain
   def act body, enacter
+  end
+end
+
+class EnergyCell
+  attr_accessor :charge
+
+  def initialize charge
+    self.charge = charge
+  end
+
+  def subtract mag
+    self.charge -= mag
+  end
+
+  def empty?
+    charge <= 0
+  end
+
+  def to_s
+    "<EnergyCell##{self.object_id} #{charge}>"
+  end
+  def inspect
+    to_s
   end
 end
 
@@ -375,6 +429,7 @@ class Mover
 
   def notify_collision s1, s2
     s1.collide s2
+    s2.collide s1
   end
 
   def forward_sort cells

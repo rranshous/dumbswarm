@@ -16,10 +16,10 @@ mover.cellspace = cellspace
 
 friend = Particle.new(cell: cellspace.at(Position.new(left: 0, up: 0)),
                       brain: Brain.new.extend(Wanderer),
-                      energy: 5, charge: 1)
+                      energy: EnergyCell.new(5))
 foe    = Particle.new(cell: cellspace.at(Position.new(left: 0, up: 200)),
                       brain: Brain.new,
-                      energy: -5, charge: -1)
+                      energy: EnergyCell.new(5))
 
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   painter.canvas = Canvas.new self
