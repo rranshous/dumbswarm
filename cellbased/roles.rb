@@ -26,6 +26,19 @@ module Locatable
     Position.new(left: l1.left + l2.left,
                  up:   l1.up   + l2.up)
   end
+
+  def left_of? locatable
+    left > locatable.left
+  end
+  def right_of? locatable
+    left < locatable.left
+  end
+  def above? locatable
+    up > locatable.up
+  end
+  def below? locatable
+    up < locatable.up
+  end
 end
 
 module SpaceTaker
@@ -78,14 +91,14 @@ module Seeker
 
   def act body, enacter
     if foe.alive?
-      if foe.left > body.left
+      if foe.left_of? body
         body.move :left, enacter
-      elsif foe.left < body.left
+      elsif foe.right_of? body
         body.move :right, enacter
       end
-      if foe.up > body.up
+      if foe.above? body
         body.move :forward, enacter
-      elsif foe.up < body.up
+      elsif foe.below? body
         body.move :back, enacter
       end
     end
