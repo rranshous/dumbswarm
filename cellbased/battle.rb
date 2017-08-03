@@ -1,0 +1,39 @@
+require 'shoes'
+require_relative 'objs'
+
+FPS = 60
+WINDOW_WIDTH=1000
+WINDOW_HEIGHT=800
+
+screen = Screen.new height: WINDOW_HEIGHT, width: WINDOW_WIDTH
+puts "pixels: #{screen.pixels.to_a.length}"
+cellspace = Cellspace.new
+cellspace.populate screen.pixels
+painter = Painter.new
+
+mover = Mover.new
+mover.cellspace = cellspace
+
+friend = Particle.new(cell: cellspace.at(Position.new(left: 0, up: 0)),
+                      brain: Brain.new.extend(Wanderer),
+                      energy: 5, charge: 1)
+foe    = Particle.new(cell: cellspace.at(Position.new(left: 0, up: 200)),
+                      brain: Brain.new,
+                      energy: -5, charge: -1)
+
+Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
+  painter.canvas = Canvas.new self
+  animate FPS do
+    begin
+      painter.clear
+      friend.act mover
+      foe.act mover
+      friend.paint painter
+      foe.paint painter
+    rescue => ex
+      puts "EXO: #{ex}"
+      puts "  : #{ex.backtrace}"
+      raise
+    end
+  end
+end

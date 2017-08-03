@@ -182,7 +182,7 @@ end
 class Cell
   include Locatable
   include Paintable
-  # include SpaceTaker
+  include SpaceTaker
 
   attr_accessor :content
 
@@ -193,6 +193,10 @@ class Cell
 
   def cells
     [self]
+  end
+
+  def collide other
+    content.collide(self, other) if content.respond_to?(:collide)
   end
 
   def visible?
@@ -260,17 +264,11 @@ class Cellspace
 end
 
 class Entity
-  # include SpaceTaker
-  attr_accessor :cells
+  include SpaceTaker
   include Paintable
 
   def visible?
     true
-  end
-
-  def cells= cells
-    @cells = cells
-    cells.each {|c| c.content = self }
   end
 
   def paint painter
@@ -282,7 +280,7 @@ end
 
 require 'forwardable'
 class Particle
-  # include SpaceTaker
+  include SpaceTaker
   include Paintable
   extend Forwardable
   attr_accessor :cell, :brain, :energy, :charge
@@ -302,6 +300,11 @@ class Particle
 
   def move direction, enacter
     enacter.move self, direction
+  end
+
+  def collide cell1, cell2
+    if cell1.content == self
+    end
   end
 
   def cells
@@ -344,30 +347,13 @@ class Mover
 
   private
 
-  def rotate space_taker, degrees
-    angle = degrees * Math::PI / 180
-    handled = []
-    center = cellspace.center(space_taker.cells)
-    space_taker.cells.each do |cell|
-      next if handled.include? cell
-      x1 = -cell.left - -center.left
-      y1 = cell.up - center.up
-      x2 = x1 * Math.cos(angle) - y1 * Math.sin(angle)
-      y2 = x1 * Math.sin(angle) + y1 * Math.cos(angle)
-      to_swap_pos = Position.new(left: -x2, up: y2)
-      to_swap_pos = Locatable.add center, to_swap_pos
-      to_swap = cellspace.at to_swap_pos
-      cellspace.swap cell, to_swap
-      handled += [to_swap, cell]
-    end
-  end
-
   def _move cells, left, up
     swap_history = []
     cells.each do |cell|
       next_pos = Locatable.add cell, Position.new(left: left, up: up)
       next_cell = cellspace.at next_pos
       if active?(cell, next_cell)
+        notify_collision(cell, next_cell)
         unwind swap_history
         return false
       end
@@ -385,6 +371,10 @@ class Mover
     swap_history.reverse.each do |(c1, c2)|
       cellspace.swap(c2, c1)
     end
+  end
+
+  def notify_collision s1, s2
+    s1.collide s2
   end
 
   def forward_sort cells

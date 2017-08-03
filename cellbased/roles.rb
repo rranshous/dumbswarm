@@ -1,4 +1,3 @@
-# module SpaceTaker ?
 
 module Locatable
   def left= mag; @left = mag; end
@@ -26,6 +25,20 @@ module Locatable
   def self.add l1, l2
     Position.new(left: l1.left + l2.left,
                  up:   l1.up   + l2.up)
+  end
+end
+
+module SpaceTaker
+  def collide spacetaker1, spacetaker2
+  end
+
+  def cells= cells
+    @cells = cells
+  end
+
+  def cells= cells
+    @cells = cells
+    cells.each {|c| c.content = self }
   end
 end
 
