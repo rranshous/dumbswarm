@@ -54,6 +54,35 @@ end
 
 module Wanderer
   def act body, enacter
-    body.move :forward, enacter
+    case rand(4)
+    when 0 then body.move :forward, enacter
+    when 1 then body.move :backward, enacter
+    when 2 then body.move :left, enacter
+    when 3 then body.move :right, enacter
+    end
   end
 end
+
+module Seeker
+
+  def observe body, context
+    @foes = context[:foes]
+    @foe = @foes.first
+  end
+
+  def act body, enacter
+    if @foe.alive?
+      if @foe.left > body.left
+        body.move :left, enacter
+      elsif @foe.left < body.left
+        body.move :right, enacter
+      end
+      if @foe.up > body.up
+        body.move :forward, enacter
+      elsif @foe.up < body.up
+        body.move :back, enacter
+      end
+    end
+  end
+end
+

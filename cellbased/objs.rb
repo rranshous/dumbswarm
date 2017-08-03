@@ -284,6 +284,7 @@ class Particle
 
   include SpaceTaker
   include Paintable
+  include Locatable # risky b/c i don't want all the methods that come with it
   attr_accessor :cell, :brain, :energy
 
   def initialize opts
@@ -292,8 +293,12 @@ class Particle
     self.energy = opts[:energy]
   end
 
+  def observe context
+    brain.observe self, context if alive?
+  end
+
   def act enacter
-    brain.act self, enacter
+    brain.act self, enacter if alive?
   end
 
   def move direction, enacter
@@ -338,6 +343,14 @@ class Particle
     !dead?
   end
 
+  def left
+    alive? ? cell.left : nil
+  end
+
+  def up
+    alive? ? cell.up : nil
+  end
+
   def cells
     [cell]
   end
@@ -350,6 +363,9 @@ end
 
 class Brain
   def act body, enacter
+  end
+
+  def observe body, context
   end
 end
 
