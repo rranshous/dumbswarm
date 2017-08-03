@@ -18,6 +18,7 @@ friend = Particle.new(cell: cellspace.at(Position.new(left: 0, up: 0)),
                       brain: Brain.new.extend(Seeker),
                       energy: EnergyCell.new(100))
 friend.cell.color = :red
+friend.cell.radius = 5
 create_foe = lambda {
   cell = cellspace.at(Position.new(left: rand(-200..200), up: rand(-200..200)))
   Particle.new(cell: cell,

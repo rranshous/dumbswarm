@@ -64,6 +64,13 @@ module Paintable
     painter.fill self
   end
 
+  def radius
+    @radius ||= 1
+  end
+  def radius= radius
+    @radius = radius
+  end
+
   def color
     @color ||= :black
   end

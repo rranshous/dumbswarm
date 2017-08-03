@@ -68,12 +68,12 @@ class Canvas
     self.shoe = shoe
   end
 
-  def fill locatable
+  def fill to_paint
     shoe.nostroke
-    shoe.fill shoe.send(locatable.color)
-    shoe.oval left: locatable.x(shoe),
-              top: locatable.y(shoe),
-              radius: 1
+    shoe.fill shoe.send(to_paint.color)
+    shoe.oval left:   to_paint.x(shoe),
+              top:    to_paint.y(shoe),
+              radius: to_paint.radius
   end
 
   def clear
