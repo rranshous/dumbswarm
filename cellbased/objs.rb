@@ -70,7 +70,7 @@ class Canvas
 
   def fill locatable
     shoe.nostroke
-    shoe.fill shoe.black
+    shoe.fill shoe.send(locatable.color)
     shoe.oval left: locatable.x(shoe),
               top: locatable.y(shoe),
               radius: 1

@@ -50,16 +50,19 @@ module Paintable
   def paint painter
     painter.fill self
   end
+
+  def color
+    @color ||= :black
+  end
+  def color= color
+    @color = color
+  end
+
 end
 
 module Wanderer
   def act body, enacter
-    case rand(4)
-    when 0 then body.move :forward, enacter
-    when 1 then body.move :backward, enacter
-    when 2 then body.move :left, enacter
-    when 3 then body.move :right, enacter
-    end
+    body.move([:forward, :back, :left, :right].sample, enacter)
   end
 end
 
@@ -67,19 +70,22 @@ module Seeker
 
   def observe body, context
     @foes = context[:foes]
-    @foe = @foes.first
+  end
+
+  def foe
+    @foes.find {|f| f.alive? }
   end
 
   def act body, enacter
-    if @foe.alive?
-      if @foe.left > body.left
+    if foe.alive?
+      if foe.left > body.left
         body.move :left, enacter
-      elsif @foe.left < body.left
+      elsif foe.left < body.left
         body.move :right, enacter
       end
-      if @foe.up > body.up
+      if foe.up > body.up
         body.move :forward, enacter
-      elsif @foe.up < body.up
+      elsif foe.up < body.up
         body.move :back, enacter
       end
     end
