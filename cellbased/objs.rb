@@ -102,8 +102,11 @@ class Painter
     end
   end
 
-  def paint
+  def clear
     canvas.clear
+  end
+
+  def paint
     to_paint.each do |(operation, paintable), _|
       canvas.send(operation, paintable)
     end
@@ -512,6 +515,7 @@ class WorkSet
     blocks = @blocks
     Enumerator.new do |y|
       loop do
+        s = Time.now.to_f
         blocks.each do |blk|
           begin
             blk.call y
@@ -520,6 +524,7 @@ class WorkSet
             puts "  : #{ex.backtrace}"
           end
         end
+        puts "WorkSet done: #{(Time.now.to_f - s).round(3)}s"
       end
     end
   end
