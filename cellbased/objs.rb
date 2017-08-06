@@ -237,13 +237,6 @@ class Cellspace
     self.cells = {}
   end
 
-  def populate space
-    #space.each do |locatable|
-    #  cells[position(locatable)] = Cell.new(left: locatable.left,
-    #                                        up: locatable.up)
-    #end
-  end
-
   def at locatable
     cells[position(locatable)] ||= Cell.new(left: locatable.left,
                                             up: locatable.up)
@@ -507,10 +500,12 @@ class WorkSet
     @enumerators = []
     @blocks = []
   end
+
   def add &blk
     @enumerators << Enumerator.new(&blk)
     @blocks << blk
   end
+
   def to_enum
     blocks = @blocks
     Enumerator.new do |y|

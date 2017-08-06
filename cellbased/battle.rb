@@ -8,9 +8,7 @@ TIME_PER_CHUNK = (1.0 / FPS) * 0.9
 WINDOW_WIDTH  = 1000
 WINDOW_HEIGHT = 800
 
-screen = Screen.new height: WINDOW_HEIGHT, width: WINDOW_WIDTH
 cellspace = Cellspace.new
-cellspace.populate screen.pixels
 painter = Painter.new
 
 mover = Mover.new
@@ -42,7 +40,7 @@ end
 work_set.add do |y|
   cannons.each do |cannon|
     cannon.observe OpenStruct.new(particles: particles, cellspace: cellspace)
-    cannon.act OpenStruct.new(particles: particles)
+    cannon.act     OpenStruct.new(particles: particles)
     y.yield
   end
 end
