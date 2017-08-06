@@ -2,7 +2,8 @@ require 'shoes'
 require 'ostruct'
 require_relative 'objs'
 
-FPS = 100
+FPS = 30
+TIME_PER_CHUNK = (1.0 / FPS) * 0.5
 
 WINDOW_WIDTH=1000
 WINDOW_HEIGHT=800
@@ -23,13 +24,10 @@ create_foe = lambda {
 }
 cannon = ParticleCannon.new
 cannon.position = Position.new(left: -100, up: -100)
-foes = ([nil]*10).map{ create_foe.call() }
+foes = ([nil]*100).map{ create_foe.call() }
 particles = foes.dup
 
 work_set = WorkSet.new
-work_set.add do
-  painter.clear
-end
 work_set.add do |y|
   particles.each do |particle|
     particle.paint painter
@@ -48,13 +46,20 @@ work_set.add do |y|
   cannon.observe OpenStruct.new(particles: particles, cellspace: cellspace)
   cannon.act OpenStruct.new(particles: particles)
 end
+work_set.add do |y|
+  painter.paint
+end
 work = work_set.to_enum
 
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   painter.canvas = Canvas.new self
   animate FPS do |i|
     begin
-      work.next
+      e = TIME_PER_CHUNK + Time.now.to_f
+      begin
+        work.next
+      end while Time.now.to_f < e
+      puts "particles: #{particles.size}" if i % 100 == 0
     rescue => ex
       puts "EXO: #{ex}"
       puts "  : #{ex.backtrace}"

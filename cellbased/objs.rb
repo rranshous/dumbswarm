@@ -90,16 +90,24 @@ class Pixel
 end
 
 class Painter
-  attr_accessor :canvas
+  attr_accessor :canvas, :to_paint
+
+  def initialize
+    self.to_paint = {}
+  end
 
   def fill paintable
     if paintable.visible?
-      canvas.fill paintable
+      self.to_paint[[:fill, paintable]] = 1
     end
   end
 
-  def clear
+  def paint
     canvas.clear
+    to_paint.each do |(operation, paintable), _|
+      canvas.send(operation, paintable)
+    end
+    to_paint.clear
   end
 end
 
@@ -506,7 +514,6 @@ class WorkSet
       loop do
         blocks.each do |blk|
           begin
-            puts "blk call"
             blk.call y
           rescue => ex
             puts "EXW: #{ex}"
