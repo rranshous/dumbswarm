@@ -3,7 +3,7 @@ require 'ostruct'
 require_relative 'objs'
 
 FPS = 30
-TIME_PER_CHUNK = (1.0 / FPS) * 0.5
+TIME_PER_CHUNK = (1.0 / FPS) * 0.9
 
 WINDOW_WIDTH=1000
 WINDOW_HEIGHT=800
@@ -38,13 +38,16 @@ work_set.add do |y|
   particles.each do |particle|
     context = OpenStruct.new(foes: foes.select {|p| p.alive? })
     particle.observe context
+    y.yield
     particle.act mover
     y.yield
   end
 end
 work_set.add do |y|
   cannon.observe OpenStruct.new(particles: particles, cellspace: cellspace)
+  y.yield
   cannon.act OpenStruct.new(particles: particles)
+  y.yield
 end
 work_set.add do |y|
   painter.paint
@@ -56,10 +59,13 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   animate FPS do |i|
     begin
       e = TIME_PER_CHUNK + Time.now.to_f
+      works = 0
       begin
         work.next
+        works += 1
       end while Time.now.to_f < e
       puts "particles: #{particles.size}" if i % 100 == 0
+      puts "works this frame: #{works}" if i % 100 == 0
     rescue => ex
       puts "EXO: #{ex}"
       puts "  : #{ex.backtrace}"
