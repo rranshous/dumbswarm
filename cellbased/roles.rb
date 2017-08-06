@@ -28,15 +28,19 @@ module Locatable
   end
 
   def left_of? locatable
+    return false if left.nil?
     left > locatable.left
   end
   def right_of? locatable
+    return false if left.nil?
     left < locatable.left
   end
   def above? locatable
+    return false if up.nil?
     up > locatable.up
   end
   def below? locatable
+    return false if up.nil?
     up < locatable.up
   end
 end
@@ -90,22 +94,21 @@ module Seeker
 
   def observe body, context
     @foes = context[:foes]
-  end
-
-  def foe
-    @foes.find {|f| f.alive? }
+    if !@foes.include? @foe
+      @foe = @foes.sample
+    end
   end
 
   def act body, enacter
-    if foe.alive?
-      if foe.left_of? body
+    if @foe && @foe.alive?
+      if @foe.left_of? body
         body.move :left, enacter
-      elsif foe.right_of? body
+      elsif @foe.right_of? body
         body.move :right, enacter
       end
-      if foe.above? body
+      if @foe.above? body
         body.move :forward, enacter
-      elsif foe.below? body
+      elsif @foe.below? body
         body.move :back, enacter
       end
     end

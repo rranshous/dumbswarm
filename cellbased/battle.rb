@@ -14,11 +14,15 @@ painter = Painter.new
 mover = Mover.new
 mover.cellspace = cellspace
 
-friend = Particle.new(cell: cellspace.at(Position.new(left: 0, up: 0)),
-                      brain: Brain.new.extend(Seeker),
-                      energy: EnergyCell.new(100))
-friend.cell.color = :red
-friend.cell.radius = 5
+create_friend = lambda {
+  cell = cellspace.at(Position.new(left: rand(-200..200), up: rand(-200..200)))
+  friend = Particle.new(cell: cell,
+                        brain: Brain.new.extend(Seeker),
+                        energy: EnergyCell.new(100))
+  friend.cell.color = :red
+  friend.cell.radius = 5
+  friend
+}
 create_foe = lambda {
   cell = cellspace.at(Position.new(left: rand(-200..200), up: rand(-200..200)))
   Particle.new(cell: cell,
@@ -26,7 +30,8 @@ create_foe = lambda {
                energy: EnergyCell.new(5))
 }
 foes = ([nil]*100).map{ create_foe.call() }
-particles = [friend] + foes
+friends = ([nil]*10).map{ create_friend.call() }
+particles = friends + foes
 
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   painter.canvas = Canvas.new self
@@ -34,7 +39,7 @@ Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
     begin
       painter.clear
       particles.each do |particle|
-        particle.observe OpenStruct.new(foes: foes)
+        particle.observe OpenStruct.new(foes: foes.select {|p| p.alive? })
         particle.act mover
         particle.paint painter
       end
