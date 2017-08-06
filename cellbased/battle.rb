@@ -2,7 +2,9 @@ require 'shoes'
 require 'ostruct'
 require_relative 'objs'
 
-FPS = 60
+FPS = 30
+PAINT_FREQ = 0.1
+
 WINDOW_WIDTH=1000
 WINDOW_HEIGHT=800
 
@@ -29,19 +31,33 @@ create_foe = lambda {
                brain: Brain.new.extend(Wanderer),
                energy: EnergyCell.new(5))
 }
+cannon = ParticleCannon.new
+cannon.position = Position.new(left: -100, up: -100)
 foes = ([nil]*100).map{ create_foe.call() }
-friends = ([nil]*10).map{ create_friend.call() }
-particles = friends + foes
+_friends = ([nil]*10).map{ create_friend.call() }
+particles = foes.dup
 
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   painter.canvas = Canvas.new self
-  animate FPS do
+  frame_count = 0
+  animate FPS do |i|
+    frame_count += 1
+    frame_count = 0 if frame_count % (FPS * PAINT_FREQ) == 0
     begin
-      painter.clear
-      particles.each do |particle|
-        particle.observe OpenStruct.new(foes: foes.select {|p| p.alive? })
-        particle.act mover
-        particle.paint painter
+      if frame_count  == 0
+        s = Time.now.to_f
+        puts "start"
+        painter.clear
+        particles.each {|p| p.paint painter }
+        puts "end: #{Time.now.to_f - s}"
+      else
+        particles.each do |particle|
+          context = OpenStruct.new(foes: foes.select {|p| p.alive? })
+          particle.observe context
+          particle.act mover
+        end
+        cannon.observe OpenStruct.new(particles: particles, cellspace: cellspace)
+        cannon.act OpenStruct.new(particles: particles)
       end
     rescue => ex
       puts "EXO: #{ex}"

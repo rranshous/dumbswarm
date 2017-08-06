@@ -29,18 +29,22 @@ module Locatable
 
   def left_of? locatable
     return false if left.nil?
+    return false if locatable.left.nil?
     left > locatable.left
   end
   def right_of? locatable
     return false if left.nil?
+    return false if locatable.left.nil?
     left < locatable.left
   end
   def above? locatable
     return false if up.nil?
+    return false if locatable.up.nil?
     up > locatable.up
   end
   def below? locatable
     return false if up.nil?
+    return false if locatable.up.nil?
     up < locatable.up
   end
 end

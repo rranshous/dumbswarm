@@ -195,6 +195,10 @@ class Cell
     [self]
   end
 
+  def empty?
+    content.nil?
+  end
+
   def collide other
     content.collide(other.content) if content.respond_to?(:collide)
   end
@@ -358,6 +362,26 @@ class Particle
   def cell= cell
     cell.content = self if !cell.nil?
     @cell = cell
+  end
+end
+
+class ParticleCannon
+  include Locatable
+
+  def observe context
+    pos = Locatable.add(self, Position.new(left: 1, up: 0))
+    @next_cell = context.cellspace.at pos
+  end
+
+  def act context
+    if @next_cell.empty?
+      particle = Particle.new(cell: @next_cell,
+                              brain: Brain.new.extend(Seeker),
+                              energy: EnergyCell.new(1))
+      particle.cell.color = :red
+      context.particles.push(particle)
+    end
+    @next_cell = nil
   end
 end
 
