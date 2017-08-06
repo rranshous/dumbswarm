@@ -2,7 +2,7 @@ require 'shoes'
 require 'ostruct'
 require_relative 'objs'
 
-FPS = 30
+FPS = 100
 
 WINDOW_WIDTH=1000
 WINDOW_HEIGHT=800
@@ -23,23 +23,38 @@ create_foe = lambda {
 }
 cannon = ParticleCannon.new
 cannon.position = Position.new(left: -100, up: -100)
-foes = ([nil]*100).map{ create_foe.call() }
+foes = ([nil]*10).map{ create_foe.call() }
 particles = foes.dup
+
+work_set = WorkSet.new
+work_set.add do
+  painter.clear
+end
+work_set.add do |y|
+  particles.each do |particle|
+    particle.paint painter
+    y.yield
+  end
+end
+work_set.add do |y|
+  particles.each do |particle|
+    context = OpenStruct.new(foes: foes.select {|p| p.alive? })
+    particle.observe context
+    particle.act mover
+    y.yield
+  end
+end
+work_set.add do |y|
+  cannon.observe OpenStruct.new(particles: particles, cellspace: cellspace)
+  cannon.act OpenStruct.new(particles: particles)
+end
+work = work_set.to_enum
 
 Shoes.app width: WINDOW_WIDTH, height: WINDOW_HEIGHT, :title => 'gridwork' do
   painter.canvas = Canvas.new self
   animate FPS do |i|
     begin
-      painter.clear
-      particles.each {|p| p.paint painter }
-
-      particles.each do |particle|
-        context = OpenStruct.new(foes: foes.select {|p| p.alive? })
-        particle.observe context
-        particle.act mover
-      end
-      cannon.observe OpenStruct.new(particles: particles, cellspace: cellspace)
-      cannon.act OpenStruct.new(particles: particles)
+      work.next
     rescue => ex
       puts "EXO: #{ex}"
       puts "  : #{ex.backtrace}"

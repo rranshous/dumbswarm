@@ -489,3 +489,31 @@ class Mover
   end
 end
 
+# functional
+
+class WorkSet
+  def initialize
+    @enumerators = []
+    @blocks = []
+  end
+  def add &blk
+    @enumerators << Enumerator.new(&blk)
+    @blocks << blk
+  end
+  def to_enum
+    blocks = @blocks
+    Enumerator.new do |y|
+      loop do
+        blocks.each do |blk|
+          begin
+            puts "blk call"
+            blk.call y
+          rescue => ex
+            puts "EXW: #{ex}"
+            puts "  : #{ex.backtrace}"
+          end
+        end
+      end
+    end
+  end
+end
